@@ -12,13 +12,13 @@ export interface Column<T> {
 }
 
 export function DataTable<T>({
-  colonnes,
-  lignes,
-  lien,
+  columns,
+  rows,
+  link,
 }: {
-  colonnes: Column<T>[];
-  lignes: T[];
-  lien?: (ligne: T) => string;
+  columns: Column<T>[];
+  rows: T[];
+  link?: (row: T) => string;
 }) {
   const router = useRouter();
   const align = (a?: string) =>
@@ -30,7 +30,7 @@ export function DataTable<T>({
         <table className="w-full min-w-[640px] text-sm">
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50/60">
-              {colonnes.map((c) => (
+              {columns.map((c) => (
                 <th
                   key={c.cle}
                   className={`px-5 py-3 font-semibold text-slate-500 ${align(c.aligne)} ${
@@ -43,8 +43,8 @@ export function DataTable<T>({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
-            {lignes.map((ligne, i) => {
-              const href = lien?.(ligne);
+            {rows.map((row, i) => {
+              const href = link?.(row);
               return (
                 <tr
                   key={i}
@@ -55,14 +55,14 @@ export function DataTable<T>({
                       : "hover:bg-slate-50/50"
                   }`}
                 >
-                  {colonnes.map((c) => (
+                  {columns.map((c) => (
                     <td
                       key={c.cle}
                       className={`px-5 py-3.5 ${align(c.aligne)} ${
                         c.masquerMobile ? "hidden md:table-cell" : ""
                       }`}
                     >
-                      {c.rendu(ligne)}
+                      {c.rendu(row)}
                     </td>
                   ))}
                 </tr>

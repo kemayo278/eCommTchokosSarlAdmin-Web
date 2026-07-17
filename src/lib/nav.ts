@@ -7,6 +7,7 @@ import {
   BarChart3,
   Headphones,
   Settings,
+  UserCheck,
 } from "lucide-react";
 
 export interface NavLeaf {
@@ -42,6 +43,7 @@ export const nav: NavGroup[] = [
       { label: "Toutes les commandes", href: "/orders" },
       { label: "Traitement", href: "/orders/processing" },
       { label: "Livraisons", href: "/orders/deliveries" },
+      { label: "Clients", href: "/orders/customers" },
       { label: "Livreurs", href: "/orders/drivers" },
       { label: "Retours", href: "/orders/returns" },
     ],
@@ -61,7 +63,7 @@ export const nav: NavGroup[] = [
     children: [
       { label: "Toutes les vidéos", href: "/videos" },
       { label: "Ajouter une vidéo", href: "/videos/new" },
-      { label: "Catégories", href: "/videos/categories" },
+      // { label: "Catégories", href: "/videos/categories" },
     ],
   },
   {
@@ -82,6 +84,15 @@ export const nav: NavGroup[] = [
       { label: "Tickets", href: "/support" },
       { label: "Messages", href: "/support/messages" },
       { label: "FAQ", href: "/support/faq" },
+    ],
+  },
+  {
+    label: "Influenceurs",
+    icon: UserCheck,
+    children: [
+      { label: "Vue d'ensemble", href: "/influencers" },
+      { label: "Ajouter", href: "/influencers/new" },
+      { label: "Demandes de retrait", href: "/influencers/payouts" },
     ],
   },
   {

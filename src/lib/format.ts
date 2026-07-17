@@ -1,3 +1,12 @@
+export function initiales(name: string): string {
+  return name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
 export function fcfa(montant: number): string {
   return new Intl.NumberFormat("fr-FR").format(Math.round(montant)) + " FCFA";
 }

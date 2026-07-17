@@ -4,21 +4,77 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Bell, Loader2, Menu, Search, X } from "lucide-react";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/contexts/auth";
+import { initiales } from "@/lib/format";
 import { notificationsAdmin } from "@/lib/data";
 import Sidebar from "./Sidebar";
+import {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command";
+import { nav } from "@/lib/nav";
+
+type QuickAction = {
+  label: string;
+  description: string;
+  href: string;
+};
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
-  const { admin, chargement } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const [drawer, setDrawer] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
   const nonLues = notificationsAdmin.filter((n) => !n.lu).length;
 
-  useEffect(() => {
-    if (!chargement && !admin) router.replace("/auth/login");
-  }, [chargement, admin, router]);
+  const quickActions: QuickAction[] = [
+    { label: "Tableau de bord", description: "Retourner à l’accueil admin", href: "/dashboard" },
+    { label: "Nouvelle catégorie", description: "Créer une catégorie produit", href: "/products/categories/new" },
+    { label: "Ajouter un produit", description: "Créer un produit", href: "/products/new" },
+    { label: "Toutes les commandes", description: "Consulter le flux de commandes", href: "/orders" },
+    { label: "Notifications", description: "Voir les dernières alertes", href: "/notifications" },
+  ];
 
-  if (chargement || !admin) {
+  const navigationActions: QuickAction[] = nav.flatMap((group) =>
+    group.href
+      ? [{ label: group.label, description: `Ouvrir ${group.label.toLowerCase()}`, href: group.href }]
+      : (group.children ?? []).map((child) => ({
+          label: child.label,
+          description: group.label,
+          href: child.href,
+        }))
+  );
+
+  useEffect(() => {
+    if (!loading && !user) router.replace("/auth/login");
+    if (!loading && user?.mustChangePassword) router.replace("/account/change-password?forced=true");
+  }, [loading, user, router]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const isShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k";
+      if (isShortcut) {
+        event.preventDefault();
+        setCommandOpen(true);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  function ouvrirAction(href: string) {
+    setCommandOpen(false);
+    router.push(href);
+  }
+
+  if (loading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-canvas">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -61,13 +117,14 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             <Menu className="h-5 w-5" />
           </button>
 
-          <div className="hidden max-w-md flex-1 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 md:flex">
+          <button
+            type="button"
+            onClick={() => setCommandOpen(true)}
+            className="hidden max-w-md flex-1 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-left text-sm text-slate-400 transition hover:border-primary/30 hover:text-slate-500 md:flex"
+          >
             <Search className="h-4 w-4 text-slate-400" />
-            <input
-              placeholder="Rechercher une commande, un produit…"
-              className="w-full bg-transparent py-2 text-sm outline-none placeholder:text-slate-400"
-            />
-          </div>
+            <span className="flex-1 truncate">Trouvez n'importe quoi : Appuyez sur ⌘K sur votre clavier</span>
+          </button>
 
           <div className="ml-auto flex items-center gap-2">
             <Link
@@ -83,15 +140,53 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               )}
             </Link>
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
-              {admin.initiales}
+              {initiales(user.name)}
             </span>
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 lg:px-8">
+        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 lg:px-8">
           {children}
         </main>
       </div>
+
+      <CommandDialog
+        open={commandOpen}
+        onOpenChange={setCommandOpen}
+        title="Actions rapides"
+        description="Recherchez une page ou lancez une action rapide"
+      >
+        <Command>
+          <CommandInput placeholder="Rechercher une page, une action…" />
+          <CommandList>
+            <CommandEmpty>Aucune action trouvée.</CommandEmpty>
+
+            <CommandGroup heading="Actions rapides">
+              {quickActions.map((action) => (
+                <CommandItem key={action.href} onSelect={() => ouvrirAction(action.href)}>
+                  <div className="flex flex-col">
+                    <span>{action.label}</span>
+                    <span className="text-[11px] text-muted-foreground">{action.description}</span>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+
+            <CommandSeparator />
+
+            <CommandGroup heading="Navigation">
+              {navigationActions.map((action) => (
+                <CommandItem key={action.href} onSelect={() => ouvrirAction(action.href)}>
+                  <div className="flex flex-col">
+                    <span>{action.label}</span>
+                    <span className="text-[11px] text-muted-foreground">{action.description}</span>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </CommandDialog>
     </div>
   );
 }

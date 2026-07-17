@@ -9,6 +9,8 @@ export function Field({
   placeholder,
   type = "text",
   suffix,
+  error,
+  required,
 }: {
   label: string;
   value: string;
@@ -16,11 +18,19 @@ export function Field({
   placeholder?: string;
   type?: string;
   suffix?: string;
+  error?: string;
+  required?: boolean;
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-semibold text-secondary">{label}</span>
-      <div className="mt-1.5 flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+      <span className="text-sm font-semibold text-secondary">
+        {label}{required && <span className="ml-0.5 text-danger">*</span>}
+      </span>
+      <div className={`mt-1.5 flex items-center gap-2 rounded-xl border bg-white px-3 focus-within:ring-2 ${
+        error
+          ? "border-danger focus-within:border-danger focus-within:ring-danger/20"
+          : "border-slate-200 focus-within:border-primary focus-within:ring-primary/20"
+      }`}>
         <input
           type={type}
           value={value}
@@ -30,6 +40,7 @@ export function Field({
         />
         {suffix && <span className="text-sm text-slate-400">{suffix}</span>}
       </div>
+      {error && <p className="mt-1 text-xs text-danger">{error}</p>}
     </label>
   );
 }
@@ -40,12 +51,14 @@ export function Textarea({
   onChange,
   placeholder,
   rows = 4,
+  error,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   rows?: number;
+  error?: string;
 }) {
   return (
     <label className="block">
@@ -55,8 +68,13 @@ export function Textarea({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={rows}
-        className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20"
+        className={`mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 text-sm outline-none placeholder:text-slate-400 focus:ring-2 ${
+          error
+            ? "border-danger focus:border-danger focus:ring-danger/20"
+            : "border-slate-200 focus:border-primary focus:ring-primary/20"
+        }`}
       />
+      {error && <p className="mt-1 text-xs text-danger">{error}</p>}
     </label>
   );
 }

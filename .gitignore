@@ -6,3 +6,8 @@
 .DS_Store
 *.tsbuildinfo
 next-env.d.ts
+
+# Archives
+src.zip
+src1.zip
+*.zip

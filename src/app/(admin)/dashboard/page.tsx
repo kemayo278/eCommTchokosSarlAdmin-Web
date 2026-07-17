@@ -62,7 +62,7 @@ export default function DashboardPage() {
               Voir tout
             </Link>
           </div>
-          <DataTable colonnes={colonnes} lignes={commandes.slice(0, 5)} lien={(c) => `/orders/${c.id}`} />
+          <DataTable columns={colonnes} rows={commandes.slice(0, 5)} link={(c) => `/orders/${c.id}`} />
         </div>
 
         <SectionCard title="Meilleures ventes">

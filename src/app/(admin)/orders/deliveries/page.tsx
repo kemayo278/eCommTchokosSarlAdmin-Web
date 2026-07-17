@@ -36,7 +36,7 @@ export default function LivraisonsAdminPage() {
         <StatCard label="Validation QR" valeur="Active" icon={<QrCode className="h-5 w-5" />} tone="info" />
       </div>
 
-      <DataTable colonnes={colonnes} lignes={livraisonsAdmin} />
+      <DataTable columns={colonnes} rows={livraisonsAdmin} />
     </div>
   );
 }

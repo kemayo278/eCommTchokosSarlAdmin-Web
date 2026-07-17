@@ -3,9 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ChevronDown, LogOut, Store } from "lucide-react";
+import { ChevronDown, KeyRound, LogOut, Store } from "lucide-react";
 import { nav } from "@/lib/nav";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/contexts/auth";
+import { initiales } from "@/lib/format";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 function hrefActif(pathname: string): string | null {
   let meilleur: string | null = null;
@@ -28,8 +37,9 @@ function hrefActif(pathname: string): string | null {
 
 export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
-  const { admin, deconnexion } = useAuth();
+  const { user, logout } = useAuth();
   const actif = hrefActif(pathname);
+  const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
 
   const groupeActif = nav.find((g) =>
     g.children?.some((c) => c.href === actif)
@@ -144,23 +154,67 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <div className="border-t border-slate-100 p-3">
         <div className="flex items-center gap-3 rounded-xl px-2 py-2">
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
-            {admin?.initiales}
+            {user ? initiales(user.name) : "–"}
           </span>
           <div className="min-w-0 leading-tight">
             <p className="truncate text-sm font-semibold text-secondary">
-              {admin?.nom}
+              {user?.name}
             </p>
-            <p className="truncate text-xs text-slate-400">{admin?.poste}</p>
+            <p className="truncate text-xs text-slate-400">{user?.role}</p>
           </div>
-          <button
-            onClick={deconnexion}
-            className="ml-auto flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-danger-soft hover:text-danger"
-            aria-label="Se déconnecter"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
+          <div className="ml-auto flex items-center gap-1">
+            <Link
+              href="/account/change-password"
+              onClick={onNavigate}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-primary-soft hover:text-primary"
+              aria-label="Changer le mot de passe"
+              title="Changer le mot de passe"
+            >
+              <KeyRound className="h-4 w-4" />
+            </Link>
+
+            <Dialog open={confirmLogoutOpen} onOpenChange={setConfirmLogoutOpen}>
+              <button
+                type="button"
+                onClick={() => setConfirmLogoutOpen(true)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-danger-soft hover:text-danger"
+                aria-label="Se déconnecter"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Confirmer la déconnexion</DialogTitle>
+                  <DialogDescription>
+                    Voulez-vous vraiment quitter la session administrateur ?
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmLogoutOpen(false)}
+                    className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConfirmLogoutOpen(false);
+                      logout();
+                      onNavigate?.();
+                    }}
+                    className="rounded-xl bg-danger px-4 py-2 text-sm font-bold text-white transition hover:opacity-80"
+                  >
+                    Se déconnecter
+                  </button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
       </div>
+
     </div>
   );
 }
