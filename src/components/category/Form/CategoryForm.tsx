@@ -283,6 +283,10 @@ export default function CategoryForm({ categoryId }: Props) {
     try {
       await axiosClient.delete(`/v1/categories/${categoryId}`);
       setDeleteOpen(false);
+      toast({
+        title: "Catégorie supprimée",
+        description: "La catégorie a été supprimée avec succès.",
+      });
       router.push("/products/categories");
     } catch (err: any) {
       const message = handleApiError(err);

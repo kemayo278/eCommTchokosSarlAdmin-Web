@@ -1,7 +1,5 @@
 import axios from "axios";
 
-// Token in sessionStorage: survives F5, cleared when tab closes, tab-scoped.
-// Never stored in localStorage. User data never stored — fetched fresh from API.
 const SESSION_KEY = "tc_token";
 
 let _token: string | null = null;
@@ -25,7 +23,6 @@ export function setAuthToken(token: string | null, remember = false): void {
 
 export function getStoredToken(): string | null {
   if (typeof window === "undefined") return null;
-  // Check localStorage first (remember me), then sessionStorage
   return localStorage.getItem(SESSION_KEY) ?? sessionStorage.getItem(SESSION_KEY);
 }
 
