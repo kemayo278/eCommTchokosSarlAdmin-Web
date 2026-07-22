@@ -29,6 +29,7 @@ export interface Product {
   slug: string;
   description: string | null;
   shortDescription: string | null;
+  longDescription: string | null;
   price: number;
   comparePrice: number | null;
   sku: string;

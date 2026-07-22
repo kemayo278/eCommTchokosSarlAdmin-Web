@@ -7,6 +7,7 @@ import type {
   StatutTransaction,
   StatutVideo,
 } from "@/lib/types";
+import type { OrderStatus, PaymentStatus, PaymentMethod } from "@/types/order";
 
 function make<T extends string>(map: Record<T, { label: string; tone: Tone }>) {
   return function BadgeStatut({ statut }: { statut: T }) {
@@ -56,4 +57,30 @@ export const BadgeTicket = make<StatutTicket>({
 
 export function BadgeActif({ actif }: { actif: boolean }) {
   return <Badge tone={actif ? "primary" : "neutral"}>{actif ? "Actif" : "Inactif"}</Badge>;
+}
+
+export const BadgeOrderStatus = make<OrderStatus>({
+  pending:   { label: "En attente",    tone: "warn"    },
+  processing:{ label: "En traitement", tone: "info"    },
+  shipped:   { label: "Expédiée",      tone: "primary" },
+  delivered: { label: "Livrée",        tone: "primary" },
+  cancelled: { label: "Annulée",       tone: "danger"  },
+});
+
+export const BadgePaymentStatus = make<PaymentStatus>({
+  pending:  { label: "En attente",  tone: "warn"    },
+  paid:     { label: "Payé",        tone: "primary" },
+  failed:   { label: "Échoué",      tone: "danger"  },
+  refunded: { label: "Remboursé",   tone: "neutral" },
+});
+
+const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
+  momo: "MTN MoMo",
+  om:   "Orange Money",
+  card: "Carte",
+  cash: "Espèces",
+};
+
+export function BadgePaymentMethod({ method }: { method: PaymentMethod }) {
+  return <Badge tone="neutral">{PAYMENT_METHOD_LABEL[method] ?? method}</Badge>;
 }

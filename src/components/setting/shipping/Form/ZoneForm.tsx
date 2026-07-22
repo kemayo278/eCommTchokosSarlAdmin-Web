@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, MapPin } from "lucide-react";
+import { ArrowLeft, Loader2, MapPin, Truck } from "lucide-react";
 import { PageHeader, Button, SectionCard } from "@/components/ui/primitives";
 import { Toggle } from "@/components/ui/Field";
 import axiosClient from "@/lib/api/axiosClient";
@@ -26,6 +26,7 @@ export default function ZoneForm({ zoneId }: Props) {
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [deliveryCost, setDeliveryCost] = useState<string>("");
   const [isActive, setIsActive] = useState(true);
 
   const [submitting, setSubmitting] = useState(false);
@@ -39,6 +40,7 @@ export default function ZoneForm({ zoneId }: Props) {
       .then(({ data }) => {
         setName(data.name);
         setDescription(data.description ?? "");
+        setDeliveryCost(data.deliveryCost != null ? String(data.deliveryCost) : "");
         setIsActive(data.isActive);
       })
       .catch((err) => setLoadError(handleApiError(err, "Impossible de charger la zone")))
@@ -53,6 +55,7 @@ export default function ZoneForm({ zoneId }: Props) {
     const payload = {
       name,
       description: description || null,
+      delivery_cost: deliveryCost !== "" ? Number(deliveryCost) : null,
       is_active: isActive,
     };
 
@@ -116,6 +119,30 @@ export default function ZoneForm({ zoneId }: Props) {
                   />
                 </div>
                 {errors.name && <p className="mt-1 text-xs text-danger">{errors.name}</p>}
+              </div>
+
+              {/* Delivery cost */}
+              <div>
+                <label className="mb-1.5 block text-sm font-semibold text-secondary">
+                  Frais de livraison <span className="text-slate-400 font-normal">(optionnel)</span>
+                </label>
+                <div className="relative">
+                  <Truck className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="number"
+                    min={0}
+                    value={deliveryCost}
+                    onChange={(e) => setDeliveryCost(e.target.value)}
+                    placeholder="Ex: 1000"
+                    className={`h-10 w-full rounded-xl border pl-9 pr-14 text-sm text-secondary placeholder:text-slate-400 outline-none transition focus:ring-2 focus:ring-primary/20 ${
+                      errors.delivery_cost ? "border-danger focus:border-danger" : "border-slate-200 focus:border-primary"
+                    }`}
+                  />
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+                    FCFA
+                  </span>
+                </div>
+                {errors.delivery_cost && <p className="mt-1 text-xs text-danger">{errors.delivery_cost}</p>}
               </div>
 
               {/* Description */}

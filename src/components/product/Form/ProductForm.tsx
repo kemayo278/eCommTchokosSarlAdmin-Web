@@ -6,6 +6,7 @@ import ReactSelect from "react-select";
 import { ArrowLeft, ChevronDown, ImagePlus, Loader2, Plus, Trash2, X } from "lucide-react";
 import { PageHeader, Button, SectionCard } from "@/components/ui/primitives";
 import { Field, Textarea, Toggle, FormRow } from "@/components/ui/Field";
+import RichTextEditor from "@/components/ui/rich-text-editor";
 import axiosClient from "@/lib/api/axiosClient";
 import type { Category } from "@/types/category";
 import type { Product } from "@/types/product";
@@ -48,6 +49,7 @@ export default function ProductForm({ productId }: { productId?: number }) {
   const [weight, setWeight] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [description, setDescription] = useState("");
+  const [longDescription, setLongDescription] = useState("");
   const [metaTitle, setMetaTitle] = useState("");
   const [metaDescription, setMetaDescription] = useState("");
   const [active, setActive] = useState(true);
@@ -91,6 +93,7 @@ export default function ProductForm({ productId }: { productId?: number }) {
           setWeight(p.weight ? String(p.weight) : "");
           setShortDescription(p.shortDescription ?? "");
           setDescription(p.description ?? "");
+          setLongDescription(p.longDescription ?? "");
           setMetaTitle(p.metaTitle ?? "");
           setMetaDescription(p.metaDescription ?? "");
           setActive(p.isActive);
@@ -207,6 +210,9 @@ export default function ProductForm({ productId }: { productId?: number }) {
     if (description.length > 10000) {
       errs.description = "La description ne doit pas dépasser 10 000 caractères.";
     }
+    if (longDescription.length > 30000) {
+      errs.longDescription = "La description longue ne doit pas dépasser 30 000 caractères.";
+    }
     if (!price || isNaN(Number(price)) || Number(price) < 0) {
       errs.price = "Le prix est obligatoire et doit être ≥ 0.";
     }
@@ -296,6 +302,7 @@ export default function ProductForm({ productId }: { productId?: number }) {
     formData.append("is_active", active ? "1" : "0");
     formData.append("is_featured", featured ? "1" : "0");
     if (description) formData.append("description", description);
+    if (longDescription) formData.append("long_description", longDescription);
     if (shortDescription) formData.append("short_description", shortDescription);
     if (comparePrice) formData.append("compare_price", String(Number(comparePrice)));
     if (barcode) formData.append("barcode", barcode);
@@ -410,6 +417,13 @@ export default function ProductForm({ productId }: { productId?: number }) {
                 onChange={(v) => { setDescription(v); setFieldErrors((p) => ({ ...p, description: "" })); }}
                 placeholder="Détails, matières, entretien…"
                 error={fieldErrors.description}
+              />
+              <RichTextEditor
+                label="Description longue"
+                value={longDescription}
+                onChange={(v) => { setLongDescription(v); setFieldErrors((p) => ({ ...p, longDescription: "" })); }}
+                placeholder="Contenu étendu : guide d'utilisation, histoire du produit…"
+                error={fieldErrors.longDescription}
               />
             </div>
           </SectionCard>

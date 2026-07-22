@@ -46,6 +46,7 @@ export const nav: NavGroup[] = [
       { label: "Clients", href: "/orders/customers" },
       { label: "Livreurs", href: "/orders/drivers" },
       { label: "Retours", href: "/orders/returns" },
+      { label: "Avis", href: "/orders/reviews" },
     ],
   },
   {
