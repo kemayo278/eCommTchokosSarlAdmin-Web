@@ -66,7 +66,7 @@ export default function TransactionsMobilePage() {
         ))}
       </div>
 
-      <DataTable colonnes={colonnes} lignes={liste} />
+      <DataTable columns={colonnes} rows={liste} />
     </div>
   );
 }

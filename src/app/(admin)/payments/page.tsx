@@ -36,7 +36,7 @@ export default function PaiementsPage() {
         <StatCard label="En attente" valeur={fcfa(enAttente)} icon={<Wallet className="h-5 w-5" />} tone="warn" />
         <StatCard label="Transactions" valeur={String(paiements.length)} icon={<CreditCard className="h-5 w-5" />} tone="info" />
       </div>
-      <DataTable colonnes={colonnes} lignes={paiements} />
+      <DataTable columns={colonnes} rows={paiements} />
     </div>
   );
 }

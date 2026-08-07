@@ -43,7 +43,7 @@ export default function StatsClientsPage() {
 
       <div>
         <h2 className="mb-3 font-bold tracking-tight text-secondary">Meilleurs clients</h2>
-        <DataTable colonnes={colonnes} lignes={top} />
+        <DataTable columns={colonnes} rows={top} />
       </div>
     </div>
   );

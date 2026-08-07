@@ -25,6 +25,7 @@ type SortKey       = "date_desc" | "date_asc" | "total_desc" | "total_asc";
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
   pending:    "En attente",
+  confirmed:  "Confirmée",
   processing: "En traitement",
   shipped:    "Expédiée",
   delivered:  "Livrée",

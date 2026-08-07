@@ -57,7 +57,7 @@ export default function SupportPage() {
         <StatCard label="Temps de réponse moyen" valeur="2 h 15" icon={<LifeBuoy className="h-5 w-5" />} tone="info" />
       </div>
 
-      <DataTable colonnes={colonnes} lignes={tickets} />
+      <DataTable columns={colonnes} rows={tickets} />
     </div>
   );
 }
