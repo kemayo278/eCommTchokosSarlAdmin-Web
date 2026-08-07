@@ -41,7 +41,7 @@ export const nav: NavGroup[] = [
     icon: ShoppingCart,
     children: [
       { label: "Toutes les commandes", href: "/orders" },
-      { label: "Traitement", href: "/orders/processing" },
+      // { label: "Traitement", href: "/orders/processing" },
       { label: "Livraisons", href: "/orders/deliveries" },
       { label: "Clients", href: "/orders/customers" },
       { label: "Livreurs", href: "/orders/drivers" },
@@ -103,7 +103,7 @@ export const nav: NavGroup[] = [
       { label: "Général", href: "/settings" },
       { label: "Boutique", href: "/settings/store" },
       { label: "Paiements", href: "/settings/payments" },
-      { label: "Livraison", href: "/settings/shipping" },
+      { label: "Zones de Livraison", href: "/settings/shipping" },
       { label: "Utilisateurs & rôles", href: "/settings/users" },
     ],
   },

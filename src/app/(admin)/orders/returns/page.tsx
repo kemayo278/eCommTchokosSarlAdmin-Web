@@ -42,7 +42,7 @@ export default function RetoursPage() {
         <StatCard label="Total remboursé" valeur={fcfa(rembourse)} icon={<RotateCcw className="h-5 w-5" />} tone="primary" />
         <StatCard label="Taux de retour" valeur="2,4 %" icon={<RotateCcw className="h-5 w-5" />} tone="info" />
       </div>
-      <DataTable colonnes={colonnes} lignes={retours} />
+      <DataTable columns={colonnes} rows={retours} />
     </div>
   );
 }

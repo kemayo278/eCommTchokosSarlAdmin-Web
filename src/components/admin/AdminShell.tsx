@@ -3,7 +3,17 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Bell, Loader2, Menu, Search, X } from "lucide-react";
+import {
+  Bell,
+  FolderPlus,
+  LayoutDashboard,
+  Loader2,
+  Menu,
+  Package,
+  Search,
+  ShoppingCart,
+  X,
+} from "lucide-react";
 import { useAuth } from "@/contexts/auth";
 import { initiales } from "@/lib/format";
 import { notificationsAdmin } from "@/lib/data";
@@ -24,6 +34,8 @@ type QuickAction = {
   label: string;
   description: string;
   href: string;
+  icon: React.ElementType;
+  iconClass: string;
 };
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
@@ -34,20 +46,22 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const nonLues = notificationsAdmin.filter((n) => !n.lu).length;
 
   const quickActions: QuickAction[] = [
-    { label: "Tableau de bord", description: "Retourner à l’accueil admin", href: "/dashboard" },
-    { label: "Nouvelle catégorie", description: "Créer une catégorie produit", href: "/products/categories/new" },
-    { label: "Ajouter un produit", description: "Créer un produit", href: "/products/new" },
-    { label: "Toutes les commandes", description: "Consulter le flux de commandes", href: "/orders" },
-    { label: "Notifications", description: "Voir les dernières alertes", href: "/notifications" },
+    { label: "Tableau de bord", description: "Retourner à l’accueil admin", href: "/dashboard", icon: LayoutDashboard, iconClass: "bg-primary-soft text-primary" },
+    { label: "Nouvelle catégorie", description: "Créer une catégorie produit", href: "/products/categories/new", icon: FolderPlus, iconClass: "bg-warn-soft text-warn" },
+    { label: "Ajouter un produit", description: "Créer un nouveau produit", href: "/products/new", icon: Package, iconClass: "bg-info-soft text-info" },
+    { label: "Toutes les commandes", description: "Consulter le flux de commandes", href: "/orders", icon: ShoppingCart, iconClass: "bg-success-soft text-success" },
+    { label: "Notifications", description: "Voir les dernières alertes", href: "/notifications", icon: Bell, iconClass: "bg-danger-soft text-danger" },
   ];
 
   const navigationActions: QuickAction[] = nav.flatMap((group) =>
     group.href
-      ? [{ label: group.label, description: `Ouvrir ${group.label.toLowerCase()}`, href: group.href }]
+      ? [{ label: group.label, description: `Ouvrir ${group.label.toLowerCase()}`, href: group.href, icon: group.icon, iconClass: "bg-slate-100 text-slate-500" }]
       : (group.children ?? []).map((child) => ({
           label: child.label,
           description: group.label,
           href: child.href,
+          icon: group.icon,
+          iconClass: "bg-slate-100 text-slate-500",
         }))
   );
 
@@ -155,18 +169,22 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         onOpenChange={setCommandOpen}
         title="Actions rapides"
         description="Recherchez une page ou lancez une action rapide"
+        className="sm:max-w-2xl"
       >
         <Command>
           <CommandInput placeholder="Rechercher une page, une action…" />
-          <CommandList>
+          <CommandList className="max-h-105">
             <CommandEmpty>Aucune action trouvée.</CommandEmpty>
 
             <CommandGroup heading="Actions rapides">
               {quickActions.map((action) => (
-                <CommandItem key={action.href} onSelect={() => ouvrirAction(action.href)}>
-                  <div className="flex flex-col">
-                    <span>{action.label}</span>
-                    <span className="text-[11px] text-muted-foreground">{action.description}</span>
+                <CommandItem key={action.href} onSelect={() => ouvrirAction(action.href)} className="gap-3 py-2">
+                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${action.iconClass}`}>
+                    <action.icon className="h-4 w-4" />
+                  </span>
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <span className="text-sm font-semibold text-secondary">{action.label}</span>
+                    <span className="text-xs text-muted-foreground">{action.description}</span>
                   </div>
                 </CommandItem>
               ))}
@@ -176,10 +194,13 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
             <CommandGroup heading="Navigation">
               {navigationActions.map((action) => (
-                <CommandItem key={action.href} onSelect={() => ouvrirAction(action.href)}>
-                  <div className="flex flex-col">
-                    <span>{action.label}</span>
-                    <span className="text-[11px] text-muted-foreground">{action.description}</span>
+                <CommandItem key={action.href} onSelect={() => ouvrirAction(action.href)} className="gap-3 py-2">
+                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${action.iconClass}`}>
+                    <action.icon className="h-4 w-4" />
+                  </span>
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <span className="text-sm font-semibold text-secondary">{action.label}</span>
+                    <span className="text-xs text-muted-foreground">{action.description}</span>
                   </div>
                 </CommandItem>
               ))}

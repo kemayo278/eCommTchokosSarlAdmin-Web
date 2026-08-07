@@ -133,7 +133,7 @@ function FilterSelect<T extends string>({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function CommandesPage() {
+export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -1,4 +1,4 @@
-export type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+export type OrderStatus = "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled";
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
 export type PaymentMethod = "momo" | "om" | "card" | "cash";
 
@@ -65,9 +65,28 @@ export interface OrderDelivery {
   livreur?: { id: number; name: string; phone: string | null } | null;
 }
 
+export interface OrderZone {
+  id: number;
+  name: string;
+  description: string | null;
+  isActive: boolean;
+  deliveryCost: string | null;
+}
+
+export interface OrderCustomer {
+  id: number;
+  name: string;
+  email: string;
+  phone: string | null;
+  avatar: string | null;
+}
+
 export interface OrderDetail extends Order {
   items: OrderItem[];
+  user: OrderCustomer | null;
   shippingAddress: ShippingAddress | null;
   payments: OrderPayment[];
   deliveries: OrderDelivery[];
+  zoneId: number | null;
+  zone: OrderZone | null;
 }

@@ -93,12 +93,17 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-3">
-      <div>
-        <h1 className="text-2xl font-extrabold tracking-tight text-secondary">{titre}</h1>
-        {sousTitre && <p className="mt-0.5 text-sm text-slate-500">{sousTitre}</p>}
+    <div className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-x-6 gap-y-2">
+      <div className="min-w-0">
+        <h1 className="truncate text-2xl font-extrabold tracking-tight text-secondary">{titre}</h1>
+        {sousTitre && (
+          <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-400">
+            <span className="h-1 w-1 shrink-0 rounded-full bg-primary" />
+            {sousTitre}
+          </p>
+        )}
       </div>
-      {action}
+      {action && <span className="shrink-0">{action}</span>}
     </div>
   );
 }
@@ -109,13 +114,15 @@ export function Button({
   variant = "primary",
   onClick,
   type = "button",
+  disabled = false,
   className = "",
 }: {
   children: ReactNode;
   href?: string;
   variant?: "primary" | "secondary" | "ghost";
-  onClick?: () => void;
+  onClick?: () => void | Promise<void>;
   type?: "button" | "submit";
+  disabled?: boolean;
   className?: string;
 }) {
   const base =
@@ -134,7 +141,7 @@ export function Button({
     );
   }
   return (
-    <button type={type} onClick={onClick} className={`${base} ${styles} ${className}`}>
+    <button type={type} onClick={onClick} disabled={disabled} className={`${base} ${styles} ${className} disabled:opacity-50 disabled:cursor-not-allowed`}>
       {children}
     </button>
   );

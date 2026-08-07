@@ -34,6 +34,8 @@ import axiosClient from "@/lib/api/axiosClient";
 import { handleApiError } from "@/lib/api/handleApiError";
 import { useToast } from "@/hooks/use-toast";
 import { fcfa } from "@/lib/format";
+import Select from "react-select";
+import AssignLivreurDialog from "@/components/order/Delivery/View/AssignLivreurDialog";
 import type { OrderDetail } from "@/types/order";
 import type { User } from "@/types/user";
 
@@ -99,6 +101,7 @@ export default function DetailCommandePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [confirmingOrder, setConfirmingOrder] = useState(false);
   const [showDeliveryDialog, setShowDeliveryDialog] = useState(false);
   const [creatingDelivery, setCreatingDelivery] = useState(false);
 
@@ -107,7 +110,7 @@ export default function DetailCommandePage() {
   const [loadingDrivers, setLoadingDrivers] = useState(false);
   const [driverSearch, setDriverSearch] = useState("");
   const [selectedDriverId, setSelectedDriverId] = useState<number | null>(null);
-  const [assigning, setAssigning] = useState(false);
+
 
   const loadDrivers = useCallback(() => {
     setSelectedDriverId(null);
@@ -130,36 +133,26 @@ export default function DetailCommandePage() {
     loadDrivers();
   }, [loadDrivers]);
 
-  const openAssignDialog = useCallback(() => {
-    setShowAssignDialog(true);
-    loadDrivers();
-  }, [loadDrivers]);
+  const openAssignDialog = useCallback(() => setShowAssignDialog(true), []);
 
-  const handleAssignDriver = async () => {
-    if (!order || selectedDriverId === null) return;
-    const delivery = (order.deliveries ?? []).find((d) => d.status !== "failed");
-    if (!delivery) return;
-    setAssigning(true);
+  const handleConfirmOrder = async () => {
+    if (!order) return;
+    setConfirmingOrder(true);
     try {
-      const endpoint =
-        delivery.livreurId === null
-          ? `/v1/admin/deliveries/${delivery.id}/force-assign`
-          : `/v1/deliveries/${delivery.id}/assign`;
-      await axiosClient.post(endpoint, { livreur_id: selectedDriverId });
-      const driver = drivers.find((d) => d.id === selectedDriverId);
+      await axiosClient.patch(`/v1/admin/orders/${order.id}/status`, { status: "confirmed" });
       toast({
-        title: "Livreur assigné",
-        description: `${driver?.name ?? "Le livreur"} a été affecté à la commande ${order.orderNumber}.`,
+        title: "Commande confirmée",
+        description: `La commande ${order.orderNumber} est confirmée. Vous pouvez maintenant créer la livraison.`,
       });
-      setShowAssignDialog(false);
       fetchOrder();
     } catch (err: any) {
-      const msg = err?.response?.data?.message ?? "Impossible d'assigner le livreur.";
+      const msg = err?.response?.data?.message ?? "Impossible de confirmer la commande.";
       toast({ title: "Erreur", description: msg, variant: "destructive" });
     } finally {
-      setAssigning(false);
+      setConfirmingOrder(false);
     }
   };
+
 
   const fetchOrder = useCallback(() => {
     setLoading(true);
@@ -179,10 +172,10 @@ export default function DetailCommandePage() {
     setCreatingDelivery(true);
     const driver = drivers.find((d) => d.id === selectedDriverId);
     try {
-      await axiosClient.post("/v1/deliveries", {
-        order_id: order.id,
-        ...(selectedDriverId !== null && { livreur_id: selectedDriverId }),
-      });
+      const payload: Record<string, unknown> = { order_id: order.id };
+      if (selectedDriverId !== null) payload.livreur_id = selectedDriverId;
+      if (order.zoneId !== null) payload.zone_id = order.zoneId;
+      await axiosClient.post("/v1/deliveries", payload);
       toast({
         title: "Livraison créée",
         description: driver
@@ -243,7 +236,7 @@ export default function DetailCommandePage() {
     <div className="space-y-6">
       {/* ── Header ────────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-3">
-        <Button variant="secondary" href="/orders" className="!px-2.5">
+        <Button variant="secondary" href="/orders" className="px-2.5!">
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <PageHeader
@@ -348,21 +341,29 @@ export default function DetailCommandePage() {
           {/* Actions */}
           <div className="flex flex-wrap gap-2">
             {order.status === "pending" && (
-              <Button onClick={openDeliveryDialog}>
-                Marquer comme en traitement
+              // <Button onClick={handleConfirmOrder} disabled={confirmingOrder}>
+              <Button onClick={handleConfirmOrder} disabled={true}>                
+                {confirmingOrder && <Loader2 className="h-4 w-4 animate-spin" />}
+                Confirmer la commande
               </Button>
             )}
-            {order.status === "processing" && (
-              <Button>Marquer comme expédiée</Button>
+            {order.status === "confirmed" && (
+              <Button onClick={openDeliveryDialog}>
+                Créer la livraison
+              </Button>
             )}
+            {order.status === "processing" && (() => {
+              const delivery = (order.deliveries ?? []).find((d) => d.status !== "failed");
+              if (!delivery || delivery.livreurId !== null) return null;
+              return (
+                <Button onClick={openAssignDialog}>
+                  <Truck className="h-4 w-4" />
+                  Assigner un livreur
+                </Button>
+              );
+            })()}
             {order.status === "shipped" && (
               <Button>Marquer comme livrée</Button>
-            )}
-            {(order.deliveries ?? []).some((d) => d.status !== "failed") && (
-              <Button variant="secondary" onClick={openAssignDialog}>
-                <Truck className="h-4 w-4" />
-                Assigner un livreur
-              </Button>
             )}
             {order.status !== "cancelled" && order.status !== "delivered" && (
               <Button variant="ghost" className="text-danger!">
@@ -377,44 +378,66 @@ export default function DetailCommandePage() {
 
           {/* Client / Adresse */}
           <SectionCard title="Destinataire">
-            {addr ? (
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-bold text-white">
-                    {initiales(addr.fullName)}
-                  </span>
-                  <div>
-                    <p className="font-bold text-secondary">{addr.fullName}</p>
-                    <p className="text-xs text-slate-400">Client #{order.userId}</p>
+            <div className="space-y-4">
+              {/* Compte client */}
+              {order.user ? (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Client</p>
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-bold text-white">
+                      {initiales(order.user.name)}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate font-bold text-secondary">{order.user.name}</p>
+                      <p className="truncate text-xs text-slate-400">{order.user.email}</p>
+                    </div>
                   </div>
+                  {order.user.phone && (
+                    <p className="flex items-center gap-2 text-sm text-slate-500">
+                      <Phone className="h-4 w-4 shrink-0 text-slate-400" />
+                      {order.user.phone}
+                    </p>
+                  )}
                 </div>
-
-                {addr.phone && (
-                  <p className="flex items-center gap-2 text-sm text-slate-500">
-                    <Phone className="h-4 w-4 shrink-0 text-slate-400" />
-                    {addr.phone}
-                  </p>
-                )}
-
-                <p className="flex items-start gap-2 text-sm text-slate-500">
-                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
-                  <span>
-                    {addr.addressLine1}
-                    {addr.addressLine2 && `, ${addr.addressLine2}`}
-                    <br />
-                    {addr.city}
-                    {addr.state && `, ${addr.state}`}
-                    {addr.postalCode && ` ${addr.postalCode}`}
-                    <br />
-                    {addr.country}
-                  </span>
+              ) : (
+                <p className="flex items-center gap-2 text-sm text-slate-400">
+                  <UserIcon className="h-4 w-4" /> Client inconnu
                 </p>
-              </div>
-            ) : (
-              <p className="flex items-center gap-2 text-sm text-slate-400">
-                <UserIcon className="h-4 w-4" /> Adresse non renseignée
-              </p>
-            )}
+              )}
+
+              {/* Adresse de livraison */}
+              {addr ? (
+                <div className="space-y-2 border-t border-slate-100 pt-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Adresse de livraison</p>
+                  {addr.fullName && (
+                    <p className="text-sm font-semibold text-secondary">{addr.fullName}</p>
+                  )}
+                  {addr.phone && (
+                    <p className="flex items-center gap-2 text-sm text-slate-500">
+                      <Phone className="h-4 w-4 shrink-0 text-slate-400" />
+                      {addr.phone}
+                    </p>
+                  )}
+                  <p className="flex items-start gap-2 text-sm text-slate-500">
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+                    <span>
+                      {addr.addressLine1}
+                      {addr.addressLine2 && `, ${addr.addressLine2}`}
+                      <br />
+                      {addr.city}
+                      {addr.state && `, ${addr.state}`}
+                      {addr.postalCode && ` ${addr.postalCode}`}
+                      <br />
+                      {addr.country}
+                    </span>
+                  </p>
+                </div>
+              ) : (
+                <p className="flex items-center gap-2 border-t border-slate-100 pt-3 text-sm text-slate-400">
+                  <MapPin className="h-4 w-4" /> Adresse non renseignée
+                </p>
+              )}
+            </div>
           </SectionCard>
 
           {/* Paiement */}
@@ -444,6 +467,16 @@ export default function DetailCommandePage() {
                   {fcfa(order.shippingCost)}
                 </span>
               </div>
+              {order.zone && (
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-sm text-slate-500">
+                    <MapPin className="h-4 w-4 text-slate-400" /> Zone
+                  </span>
+                  <span className="text-sm font-semibold text-secondary">
+                    {order.zone.name}
+                  </span>
+                </div>
+              )}
               {addr?.city && (
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-2 text-sm text-slate-500">
@@ -493,114 +526,18 @@ export default function DetailCommandePage() {
       </div>
 
       {/* ── Dialog : assigner un livreur ─────────────────────────────────── */}
-      <Dialog open={showAssignDialog} onOpenChange={(o) => { if (!o) setShowAssignDialog(false); }}>
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Assigner un livreur</DialogTitle>
-            <DialogDescription>
-              Sélectionnez un livreur actif pour la commande{" "}
-              <strong>{order.orderNumber}</strong>.
-            </DialogDescription>
-          </DialogHeader>
-
-          {/* Search */}
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <input
-              value={driverSearch}
-              onChange={(e) => setDriverSearch(e.target.value)}
-              placeholder="Rechercher par nom, téléphone…"
-              className="h-10 w-full rounded-xl border border-slate-200 bg-surface pl-9 pr-9 text-sm text-secondary placeholder:text-slate-400 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-            />
-            {driverSearch && (
-              <button
-                type="button"
-                onClick={() => setDriverSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-secondary"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-
-          {/* Driver list */}
-          <div className="max-h-72 overflow-y-auto rounded-xl border border-slate-100">
-            {loadingDrivers ? (
-              <div className="flex items-center justify-center py-10">
-                <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
-              </div>
-            ) : (() => {
-              const q = driverSearch.trim().toLowerCase();
-              const filtered = drivers.filter(
-                (d) =>
-                  !q ||
-                  d.name.toLowerCase().includes(q) ||
-                  (d.phone ?? "").includes(q)
-              );
-              if (filtered.length === 0)
-                return (
-                  <p className="py-10 text-center text-sm text-slate-400">
-                    Aucun livreur disponible
-                  </p>
-                );
-              return filtered.map((driver) => (
-                <button
-                  key={driver.id}
-                  type="button"
-                  onClick={() => setSelectedDriverId(driver.id)}
-                  className={`flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-slate-50 ${
-                    selectedDriverId === driver.id
-                      ? "bg-primary-soft ring-1 ring-inset ring-primary/30"
-                      : ""
-                  }`}
-                >
-                  <span
-                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold ${avatarColor(driver.id)}`}
-                  >
-                    {initiales(driver.name)}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-semibold text-secondary">
-                      {driver.name}
-                    </p>
-                    <p className="flex items-center gap-1 text-xs text-slate-400">
-                      {driver.phone && (
-                        <><Phone className="h-3 w-3" />{driver.phone}</>
-                      )}
-                      {driver.zones.length > 0 && (
-                        <span className="ml-1">
-                          · {driver.zones.map((z) => z.name).join(", ")}
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                  {selectedDriverId === driver.id && (
-                    <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />
-                  )}
-                </button>
-              ));
-            })()}
-          </div>
-
-          <DialogFooter>
-            <button
-              onClick={() => setShowAssignDialog(false)}
-              disabled={assigning}
-              className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
-            >
-              Annuler
-            </button>
-            <button
-              onClick={handleAssignDriver}
-              disabled={selectedDriverId === null || assigning}
-              className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
-            >
-              {assigning && <Loader2 className="h-4 w-4 animate-spin" />}
-              Assigner
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {(() => {
+        const delivery = (order.deliveries ?? []).find((d) => d.status !== "failed");
+        if (!delivery) return null;
+        return (
+          <AssignLivreurDialog
+            deliveryId={String(delivery.id)}
+            open={showAssignDialog}
+            onOpenChange={setShowAssignDialog}
+            onSuccess={fetchOrder}
+          />
+        );
+      })()}
 
       {/* ── Dialog : créer une livraison ──────────────────────────────────── */}
       <Dialog open={showDeliveryDialog} onOpenChange={(o) => { if (!o) setShowDeliveryDialog(false); }}>
@@ -612,6 +549,35 @@ export default function DetailCommandePage() {
               <strong>{order.orderNumber}</strong>. Le client sera notifié.
             </DialogDescription>
           </DialogHeader>
+
+          {/* Zone selector */}
+          <div>
+            <label className="mb-1.5 block text-sm font-semibold text-secondary">
+              Zone de livraison
+            </label>
+            <Select
+              isDisabled
+              value={
+                order.zone
+                  ? {
+                      value: order.zone.id,
+                      label: order.zone.deliveryCost
+                        ? `${order.zone.name} · ${Number(order.zone.deliveryCost).toLocaleString("fr-FR")} FCFA`
+                        : order.zone.name,
+                    }
+                  : null
+              }
+              options={[]}
+              placeholder="Aucune zone renseignée"
+              unstyled
+              classNames={{
+                control: () =>
+                  "flex h-10 w-full items-center rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm cursor-not-allowed",
+                singleValue: () => "text-secondary",
+                placeholder: () => "text-slate-400",
+              }}
+            />
+          </div>
 
           {/* Search */}
           <div className="relative">

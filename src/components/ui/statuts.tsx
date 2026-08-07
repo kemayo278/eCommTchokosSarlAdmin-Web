@@ -8,10 +8,11 @@ import type {
   StatutVideo,
 } from "@/lib/types";
 import type { OrderStatus, PaymentStatus, PaymentMethod } from "@/types/order";
+import type { DeliveryStatus } from "@/types/delivery";
 
 function make<T extends string>(map: Record<T, { label: string; tone: Tone }>) {
   return function BadgeStatut({ statut }: { statut: T }) {
-    const s = map[statut];
+    const s = map[statut] ?? { label: statut, tone: "neutral" as Tone };
     return <Badge tone={s.tone}>{s.label}</Badge>;
   };
 }
@@ -61,7 +62,8 @@ export function BadgeActif({ actif }: { actif: boolean }) {
 
 export const BadgeOrderStatus = make<OrderStatus>({
   pending:   { label: "En attente",    tone: "warn"    },
-  processing:{ label: "En traitement", tone: "info"    },
+  confirmed: { label: "Confirmée",     tone: "info"    },
+  processing:{ label: "En traitement", tone: "primary" },
   shipped:   { label: "Expédiée",      tone: "primary" },
   delivered: { label: "Livrée",        tone: "primary" },
   cancelled: { label: "Annulée",       tone: "danger"  },
@@ -80,6 +82,14 @@ const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
   card: "Carte",
   cash: "Espèces",
 };
+
+export const BadgeDeliveryStatus = make<DeliveryStatus>({
+  pending:    { label: "En attente", tone: "warn"    },
+  assigned:   { label: "Assignée",   tone: "info"    },
+  in_transit: { label: "En transit", tone: "primary" },
+  delivered:  { label: "Livrée",     tone: "primary" },
+  failed:     { label: "Échouée",    tone: "danger"  },
+});
 
 export function BadgePaymentMethod({ method }: { method: PaymentMethod }) {
   return <Badge tone="neutral">{PAYMENT_METHOD_LABEL[method] ?? method}</Badge>;
