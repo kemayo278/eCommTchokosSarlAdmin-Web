@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\NEXT JS\\\\tchokos-admin\\\\src\\\\app\\\\\\(admin\\)\\\\settings\\\\hero-images\\\\new\")",
+      "Bash(Out-Null)",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\CODE\\\\NEXT JS\\\\tchokos-admin\\\\src\\\\app\\\\\\(admin\\)\\\\settings\\\\hero-images\\\\[id]\\\\edit\")"
+    ]
+  }
+}

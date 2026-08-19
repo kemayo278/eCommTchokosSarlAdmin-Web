@@ -67,17 +67,17 @@ export const nav: NavGroup[] = [
       // { label: "Catégories", href: "/videos/categories" },
     ],
   },
-  {
-    label: "Statistiques",
-    icon: BarChart3,
-    children: [
-      { label: "Tableau de bord", href: "/statistics" },
-      { label: "Ventes", href: "/statistics/sales" },
-      { label: "Produits", href: "/statistics/products" },
-      { label: "Clients", href: "/statistics/customers" },
-      { label: "Financières", href: "/statistics/financial" },
-    ],
-  },
+  // {
+  //   label: "Statistiques",
+  //   icon: BarChart3,
+  //   children: [
+  //     { label: "Tableau de bord", href: "/statistics" },
+  //     { label: "Ventes", href: "/statistics/sales" },
+  //     { label: "Produits", href: "/statistics/products" },
+  //     { label: "Clients", href: "/statistics/customers" },
+  //     { label: "Financières", href: "/statistics/financial" },
+  //   ],
+  // },
   {
     label: "Support client",
     icon: Headphones,
@@ -105,6 +105,7 @@ export const nav: NavGroup[] = [
       { label: "Paiements", href: "/settings/payments" },
       { label: "Zones de Livraison", href: "/settings/shipping" },
       { label: "Utilisateurs & rôles", href: "/settings/users" },
+      { label: "Héros images", href: "/settings/hero-images" },
     ],
   },
 ];
