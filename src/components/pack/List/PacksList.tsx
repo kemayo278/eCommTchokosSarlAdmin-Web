@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CalendarRange, Layers, Pencil, Plus, Search, X, Zap } from "lucide-react";
+import { ArrowDown, ArrowUp, CalendarRange, Layers, Minus, Pencil, Plus, Search, X, Zap } from "lucide-react";
 import { PageHeader, Card, Button, Badge } from "@/components/ui/primitives";
 import { BadgeActif } from "@/components/ui/statuts";
 import axiosClient from "@/lib/api/axiosClient";
@@ -13,6 +13,7 @@ import type { Pack } from "@/types/pack";
 
 type TypeFilter = "all" | "pack" | "flash_sale";
 type StatusFilter = "all" | "active" | "inactive";
+type PositionFilter = "all" | "top" | "center" | "bottom";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("fr-FR", {
@@ -31,12 +32,13 @@ export default function PacksList() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [positionFilter, setPositionFilter] = useState<PositionFilter>("all");
 
   useEffect(() => {
     setLoading(true);
     setError(null);
     axiosClient
-      .get<Pack[]>("/v1/packs")
+      .get<Pack[]>("/v1/admin/packs")
       .then(({ data }) => {
         const list = Array.isArray(data) ? data : (data as any)?.data ?? [];
         setPacks(list);
@@ -54,11 +56,13 @@ export default function PacksList() {
         statusFilter === "all" ||
         (statusFilter === "active" && p.isActive) ||
         (statusFilter === "inactive" && !p.isActive);
-      return matchSearch && matchType && matchStatus;
+      const matchPosition =
+        positionFilter === "all" || (p.position ?? "top") === positionFilter;
+      return matchSearch && matchType && matchStatus && matchPosition;
     });
-  }, [packs, search, typeFilter, statusFilter]);
+  }, [packs, search, typeFilter, statusFilter, positionFilter]);
 
-  const hasFilters = search || typeFilter !== "all" || statusFilter !== "all";
+  const hasFilters = search || typeFilter !== "all" || statusFilter !== "all" || positionFilter !== "all";
 
   if (loading) return <LoadingSpinner />;
 
@@ -145,6 +149,27 @@ export default function PacksList() {
               </button>
             ))}
           </div>
+
+          {/* Position */}
+          <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-surface p-1">
+            {(["all", "top", "center", "bottom"] as PositionFilter[]).map((pos) => (
+              <button
+                key={pos}
+                type="button"
+                onClick={() => setPositionFilter(pos)}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
+                  positionFilter === pos
+                    ? "bg-primary text-white shadow-sm"
+                    : "text-slate-500 hover:bg-slate-50 hover:text-secondary"
+                }`}
+              >
+                {pos === "top" && <ArrowUp className="h-3.5 w-3.5" />}
+                {pos === "center" && <Minus className="h-3.5 w-3.5" />}
+                {pos === "bottom" && <ArrowDown className="h-3.5 w-3.5" />}
+                {pos === "all" ? "Tous" : pos === "top" ? "Haut" : pos === "center" ? "Centre" : "Bas"}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -168,7 +193,7 @@ export default function PacksList() {
           {hasFilters && (
             <button
               type="button"
-              onClick={() => { setSearch(""); setTypeFilter("all"); setStatusFilter("all"); }}
+              onClick={() => { setSearch(""); setTypeFilter("all"); setStatusFilter("all"); setPositionFilter("all"); }}
               className="mt-4 text-sm font-semibold text-primary hover:underline"
             >
               Réinitialiser les filtres
@@ -209,6 +234,14 @@ export default function PacksList() {
                   <div className="flex shrink-0 flex-col items-end gap-1.5">
                     <Badge tone={pack.type === "flash_sale" ? "warn" : "info"}>
                       {pack.type === "flash_sale" ? "Vente flash" : "Pack"}
+                    </Badge>
+                    <Badge tone="neutral">
+                      <span className="flex items-center gap-1">
+                        {(pack.position ?? "top") === "top" && <ArrowUp className="h-3 w-3" />}
+                        {(pack.position ?? "top") === "center" && <Minus className="h-3 w-3" />}
+                        {(pack.position ?? "top") === "bottom" && <ArrowDown className="h-3 w-3" />}
+                        {(pack.position ?? "top") === "top" ? "Haut" : (pack.position ?? "top") === "center" ? "Centre" : "Bas"}
+                      </span>
                     </Badge>
                     <BadgeActif actif={pack.isActive} />
                   </div>

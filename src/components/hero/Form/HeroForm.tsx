@@ -210,9 +210,14 @@ export default function HeroForm({ initial }: Props) {
                   Cliquer pour charger une image
                 </span>
                 <span className="text-xs">JPEG, PNG, WEBP · max 4 Mo</span>
+                <span className="text-xs opacity-70">Dimensions recommandées : 2358 × 1185 px</span>
               </button>
             )}
             {errors.image && <p className="mt-1.5 text-xs text-danger">{errors.image}</p>}
+            <p className="mt-2 flex items-center gap-1.5 text-xs text-slate-400">
+              <span className="inline-block h-1 w-1 rounded-full bg-primary" />
+              Pour un affichage optimal, utilisez une image de <strong className="text-slate-500">2358 × 1185 px</strong> (ratio 2:1).
+            </p>
           </SectionCard>
 
           {/* Period */}

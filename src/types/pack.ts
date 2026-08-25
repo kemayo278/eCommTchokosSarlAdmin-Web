@@ -23,6 +23,7 @@ export interface Pack {
   isActive: boolean;
   isCurrentlyActive: boolean;
   sortOrder: number;
+  position: "top" | "center" | "bottom" | null;
   products: PackProduct[];
   productsCount: number;
   createdAt: string;

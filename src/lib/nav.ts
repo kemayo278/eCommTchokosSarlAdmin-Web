@@ -49,15 +49,15 @@ export const nav: NavGroup[] = [
       { label: "Avis", href: "/orders/reviews" },
     ],
   },
-  {
-    label: "Paiements",
-    icon: CreditCard,
-    children: [
-      { label: "Historique", href: "/payments" },
-      { label: "Transactions MoMo / OM", href: "/payments/transactions" },
-      { label: "Rapports financiers", href: "/payments/reports" },
-    ],
-  },
+  // {
+  //   label: "Paiements",
+  //   icon: CreditCard,
+  //   children: [
+  //     { label: "Historique", href: "/payments" },
+  //     { label: "Transactions MoMo / OM", href: "/payments/transactions" },
+  //     { label: "Rapports financiers", href: "/payments/reports" },
+  //   ],
+  // },
   {
     label: "Vidéos",
     icon: Video,

@@ -7,7 +7,7 @@ import axiosClient from "@/lib/api/axiosClient";
 import { handleApiError } from "@/lib/api/handleApiError";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ErrorAlert from "@/components/ui/ErrorAlert";
-import type { HeroImage } from "@/components/hero/List/HeroImagesList";
+import { HeroImage } from "@/types/heroimage";
 
 export default function HeroImagesEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -24,6 +24,7 @@ export default function HeroImagesEditPage() {
   }, [id]);
 
   if (loading) return <LoadingSpinner />;
+  
   if (error || !hero) return <ErrorAlert message={error ?? "Image introuvable."} />;
 
   return <HeroForm initial={hero} />;

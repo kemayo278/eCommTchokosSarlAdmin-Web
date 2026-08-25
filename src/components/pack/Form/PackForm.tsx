@@ -68,6 +68,7 @@ export default function PackForm({ packId }: { packId?: number }) {
   const [expiresAt, setExpiresAt] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [sortOrder, setSortOrder] = useState("0");
+  const [position, setPosition] = useState<"" | "top" | "center" | "bottom">("top");
   const [selectedEntries, setSelectedEntries] = useState<SelectedEntry[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -124,6 +125,7 @@ export default function PackForm({ packId }: { packId?: number }) {
         setExpiresAt(pack.expiresAt ? isoToLocal(pack.expiresAt) : "");
         setIsActive(pack.isActive);
         setSortOrder(String(pack.sortOrder));
+        setPosition((pack.position ?? "") as "" | "top" | "center" | "bottom");
         setSelectedEntries(
           pack.products.map((pp) => ({
             id: pp.productId,
@@ -160,6 +162,7 @@ export default function PackForm({ packId }: { packId?: number }) {
         .map((id) => ({ id, discountPercent: "", discountFixed: "" }));
       return [...kept, ...added];
     });
+    if (vals.length > 0) setFieldErrors((p) => ({ ...p, products: "" }));
   }
 
   function removeProduct(id: number) {
@@ -195,6 +198,7 @@ export default function PackForm({ packId }: { packId?: number }) {
     if (!name.trim()) errs.name = "Le nom du pack est obligatoire.";
     else if (name.trim().length > 255) errs.name = "Le nom ne doit pas dépasser 255 caractères.";
     if (!coverPreview) errs.coverImage = "L'image de couverture est obligatoire.";
+    if (selectedEntries.length === 0) errs.products = "Veuillez sélectionner au moins un produit.";
     if (expiresAt && startsAt && new Date(expiresAt) <= new Date(startsAt))
       errs.expiresAt = "La date d'expiration doit être postérieure à la date de début.";
     if (sortOrder !== "" && (isNaN(Number(sortOrder)) || Number(sortOrder) < 0 || !Number.isInteger(Number(sortOrder))))
@@ -219,6 +223,7 @@ export default function PackForm({ packId }: { packId?: number }) {
     if (startsAt) formData.append("starts_at", startsAt);
     if (expiresAt) formData.append("expires_at", expiresAt);
     if (coverImage) formData.append("cover_image", coverImage);
+    formData.append("position", position || "top");
 
     selectedEntries.forEach((entry, i) => {
       formData.append(`product_ids[${i}][id]`, String(entry.id));
@@ -322,7 +327,9 @@ export default function PackForm({ packId }: { packId?: number }) {
                 classNames={{
                   control: ({ isFocused }) =>
                     `rounded-xl border bg-white px-3 py-1 text-sm transition ${
-                      isFocused
+                      fieldErrors.products
+                        ? "border-danger ring-2 ring-danger/20"
+                        : isFocused
                         ? "border-primary ring-2 ring-primary/20"
                         : "border-slate-200"
                     }`,
@@ -341,6 +348,9 @@ export default function PackForm({ packId }: { packId?: number }) {
                 }}
               />
             </label>
+            {fieldErrors.products && (
+              <p className="mt-1 text-xs text-danger">{fieldErrors.products}</p>
+            )}
 
             {selectedEntries.length > 0 && (
               <ul className="mt-4 space-y-2">
@@ -427,6 +437,17 @@ export default function PackForm({ packId }: { packId?: number }) {
                 options={[
                   { valeur: "pack", libelle: "Pack" },
                   { valeur: "flash_sale", libelle: "Vente flash" },
+                ]}
+              />
+              <Select
+                label="Position"
+                value={position}
+                onChange={(v) => setPosition(v as "" | "top" | "center" | "bottom")}
+                options={[
+                  { valeur: "", libelle: "—" },
+                  { valeur: "top", libelle: "Haut" },
+                  { valeur: "center", libelle: "Centre" },
+                  { valeur: "bottom", libelle: "Bas" },
                 ]}
               />
               <Field
