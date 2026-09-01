@@ -1,0 +1,102 @@
+# Tchokos Admin
+
+Interface d'administration pour Tchokos Sarl — construite avec Next.js 15, React 19, TypeScript et shadcn/ui.
+
+---
+
+## Prérequis
+
+- Node.js >= 18
+- npm ou yarn
+- API backend Laravel accessible (eCommTchokosSarl-Api)
+
+---
+
+## Installation
+
+```bash
+npm install
+```
+
+---
+
+## Configuration des variables d'environnement
+
+Créer un fichier `.env.local` à la racine du projet :
+
+```env
+# URL de l'API backend Laravel
+NEXT_PUBLIC_API_URL=http://localhost/eCommTchokosSarl-Api-main/api
+
+# URL du site vitrine (front-end client)
+NEXT_PUBLIC_STORE_URL=https://tchokos-ecommerce.vercel.app
+
+# Configuration SMTP pour l'envoi d'emails
+SMTP_HOST=smtp.hostinger.com
+SMTP_PORT=465
+SMTP_USER=votre_email@domaine.com
+SMTP_PASSWORD=votre_mot_de_passe
+SMTP_FROM_NAME=Noreply Tchokos Sarl
+```
+
+> Les variables préfixées `NEXT_PUBLIC_` sont exposées côté client.
+> Les variables `SMTP_*` restent côté serveur (actions serveur / route handlers).
+
+---
+
+## Lancement
+
+```bash
+# Développement
+npm run dev
+
+# Build production
+npm run build
+npm run start
+
+# Lint
+npm run lint
+```
+
+Le serveur de développement démarre sur [http://localhost:3000](http://localhost:3000).
+
+---
+
+## Stack technique
+
+| Couche       | Technologie                          |
+|--------------|--------------------------------------|
+| Framework    | Next.js 15 (App Router)              |
+| UI           | shadcn/ui, Tailwind CSS 4, Radix UI  |
+| Icônes       | Hugeicons, Lucide React              |
+| Formulaires  | React Hook Form                      |
+| Requêtes API | Axios                                |
+| Éditeur      | TipTap                               |
+| Graphiques   | Recharts                             |
+| Emails       | Nodemailer (SMTP)                    |
+| Dates        | date-fns                             |
+
+---
+
+## Structure du projet
+
+```
+src/
+├── app/          # Pages et layouts (App Router)
+├── components/   # Composants réutilisables
+├── contexts/     # Providers React Context
+├── hooks/        # Hooks personnalisés
+├── lib/          # Utilitaires et helpers
+├── services/     # Appels API et services externes
+└── types/        # Définitions TypeScript
+```
+
+---
+
+## Alias de chemin
+
+L'alias `@/` pointe vers `./src/` (configuré dans `tsconfig.json`).
+
+```ts
+import { handleApiError } from "@/lib/api/handleApiError";
+```

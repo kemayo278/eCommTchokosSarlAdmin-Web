@@ -1,5 +1,4 @@
-// lib/handleApiError.ts
-import { toast } from "@/hooks/use-toast"; // adapte le chemin selon ton projet
+import { toast } from "@/hooks/use-toast";
 
 interface ApiErrorData {
   message?: string;
@@ -8,7 +7,6 @@ interface ApiErrorData {
 }
 
 export function handleApiError(err: any, fallbackTitle = "Erreur"): string {
-  // Erreur réseau (ex: Firebase auth, fetch offline, etc.)
   if (err?.code === "auth/network-request-failed" || err?.message === "Network Error") {
     const message = "Vérifiez votre connexion internet et réessayez.";
     toast({
@@ -23,7 +21,6 @@ export function handleApiError(err: any, fallbackTitle = "Erreur"): string {
   const data: ApiErrorData | undefined = response?.data;
   const status = response?.status;
 
-  // 422 - Erreurs de validation Laravel
   if (status === 422 && data?.errors) {
     const firstErrorKey = Object.keys(data.errors)[0];
     const message =
@@ -39,7 +36,6 @@ export function handleApiError(err: any, fallbackTitle = "Erreur"): string {
     return message;
   }
 
-  // 500 ou autres erreurs serveur
   if (status && status >= 500) {
     const message =
       data?.message ?? data?.error ?? "Une erreur serveur est survenue. Veuillez réessayer.";
@@ -52,7 +48,6 @@ export function handleApiError(err: any, fallbackTitle = "Erreur"): string {
     return message;
   }
 
-  // Cas générique (400, 401, 403, 404, etc.)
   const message = data?.message ?? data?.error ?? "Une erreur est survenue. Veuillez réessayer.";
 
   toast({
